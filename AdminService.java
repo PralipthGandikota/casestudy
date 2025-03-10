@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -56,15 +57,60 @@ public class AdminService {
 	        return policyRepository.findAll();
 	    }
 	    
+	    @Transactional(readOnly = true)
+	    public List<Policy> getPendingPolicies() {
+	        return policyRepository.findByApprovalStatus("PENDING");
+	    }
+	    
 	    @Transactional
 	    public boolean cancelPolicyByAdmin(Long policyId) {
 	        Optional<Policy> policyOpt = policyRepository.findById(policyId);
 	        
 	        if (policyOpt.isPresent()) {
 	            Policy policy = policyOpt.get();
-	            policy.cancel();
+	            policy.setStatus("CANCELLED");
+	            policy.setCancelledAt(LocalDateTime.now());
 	            policyRepository.save(policy);
 	            return true;
+	        }
+	        
+	        return false;
+	    }
+	    
+	    @Transactional
+	    public boolean approvePolicyByAdmin(Long policyId) {
+	        Optional<Policy> policyOpt = policyRepository.findById(policyId);
+	        
+	        if (policyOpt.isPresent()) {
+	            Policy policy = policyOpt.get();
+	            
+	            // Only approve if it's in PENDING status
+	            if ("PENDING".equals(policy.getApprovalStatus())) {
+	                policy.setApprovalStatus("APPROVED");
+	                policy.setApprovedAt(LocalDateTime.now());
+	                policyRepository.save(policy);
+	                return true;
+	            }
+	        }
+	        
+	        return false;
+	    }
+	    
+	    @Transactional
+	    public boolean rejectPolicyByAdmin(Long policyId, String reason) {
+	        Optional<Policy> policyOpt = policyRepository.findById(policyId);
+	        
+	        if (policyOpt.isPresent()) {
+	            Policy policy = policyOpt.get();
+	            
+	            // Only reject if it's in PENDING status
+	            if ("PENDING".equals(policy.getApprovalStatus())) {
+	                policy.setApprovalStatus("REJECTED");
+	                policy.setRejectionReason(reason);
+	                policy.setRejectedAt(LocalDateTime.now());
+	                policyRepository.save(policy);
+	                return true;
+	            }
 	        }
 	        
 	        return false;
