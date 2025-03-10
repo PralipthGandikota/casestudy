@@ -109,6 +109,7 @@
                                         <th>Premium</th>
                                         <th>Status</th>
                                         <th>Actions</th>
+										<th>Approval Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -127,6 +128,12 @@
                                             <span th:if="${policy.status == 'CANCELLED'}" class="badge bg-danger">Cancelled</span>
                                             <span th:if="${policy.status == 'EXPIRED'}" class="badge bg-secondary">Expired</span>
                                         </td>
+										<td>
+										    <span th:if="${policy.approvalStatus == 'PENDING'}" class="badge bg-warning text-dark approval-badge">Pending</span>
+										    <span th:if="${policy.approvalStatus == 'APPROVED'}" class="badge bg-success approval-badge">Approved</span>
+										    <span th:if="${policy.approvalStatus == 'REJECTED'}" class="badge bg-danger approval-badge">Rejected</span>
+										    <span th:if="${policy.approvalStatus == 'ON_HOLD'}" class="badge bg-secondary approval-badge">On Hold</span>
+										</td>
                                         <td>
                                             <a th:href="@{/policy/view/{id}(id=${policy.id})}" class="btn btn-sm btn-info">View</a>
                                             <form th:if="${policy.status == 'ACTIVE'}" th:action="@{/policy/cancel/{id}(id=${policy.id})}" 
