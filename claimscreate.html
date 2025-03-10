@@ -1,0 +1,255 @@
+<!--templates/claims/create.html-->
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance System - File New Claim</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: #c2c7d0;
+            margin: 5px 0;
+        }
+        .sidebar .nav-link:hover {
+            color: white;
+        }
+        .sidebar .nav-link.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .form-card {
+            border-radius: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .form-card:hover {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .info-icon {
+            color: #17a2b8;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4 p-3">
+                        <h4>Insurance System</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard">
+                                <i class="bi bi-house-door me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard/policies">
+                                <i class="bi bi-shield-check me-2"></i>Policies
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard/profile">
+                                <i class="bi bi-person me-2"></i>Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/dashboard/claims">
+                                <i class="bi bi-file-earmark-text me-2"></i>Claims
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard/payments">
+                                <i class="bi bi-credit-card me-2"></i>Payments
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard/documents">
+                                <i class="bi bi-file-earmark me-2"></i>Documents
+                            </a>
+                        </li>
+                        <li class="nav-item mt-5">
+                            <a class="nav-link" href="/logout">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">File New Claim</h1>
+                    <a href="/dashboard/claims" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Claims
+                    </a>
+                </div>
+
+                <!-- Alert for error message if any -->
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <!-- Claim Form -->
+                <div class="card form-card">
+                    <div class="card-header py-3">
+                        <h5 class="mb-0"><i class="bi bi-file-earmark-plus me-2"></i>Claim Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/claims/create}" method="post" th:object="${claim}" enctype="multipart/form-data">
+                            <!-- Policy Selection -->
+                            <div class="mb-4">
+                                <label for="policyId" class="form-label">Select Policy <span class="text-danger">*</span></label>
+                                <select class="form-select" id="policyId" name="policyId" required>
+                                    <option value="">-- Select Policy --</option>
+                                    <option th:each="policy : ${policies}" 
+                                            th:value="${policy.id}" 
+                                            th:text="${policy.policyNumber + ' - ' + policy.policyType + ' (' + policy.insuranceDetails.coverageAmount + ' coverage)'}">
+                                    </option>
+                                </select>
+                                <div class="form-text text-muted">
+                                    <i class="bi bi-info-circle info-icon"></i> 
+                                    Select the policy against which you want to file this claim.
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <!-- Claim Type -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="claimType" class="form-label">Claim Type <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="claimType" th:field="*{claimType}" required>
+                                        <option value="">-- Select Type --</option>
+                                        <option value="ACCIDENT">Accident</option>
+                                        <option value="THEFT">Theft</option>
+                                        <option value="FIRE">Fire</option>
+                                        <option value="FLOOD">Flood</option>
+                                        <option value="DAMAGE">Property Damage</option>
+                                        <option value="MEDICAL">Medical</option>
+                                        <option value="OTHER">Other</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Incident Date -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="incidentDate" class="form-label">Incident Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="incidentDate" th:field="*{incidentDate}" required 
+                                           max="${#dates.format(new java.util.Date(), 'yyyy-MM-dd')}">
+                                </div>
+                            </div>
+
+                            <!-- Claim Amount -->
+                            <div class="mb-3">
+                                <label for="claimAmount" class="form-label">Claim Amount <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" class="form-control" id="claimAmount" th:field="*{claimAmount}" 
+                                           step="0.01" min="0" required>
+                                </div>
+                                <div class="form-text text-muted">
+                                    <i class="bi bi-info-circle info-icon"></i> 
+                                    Enter the estimated total amount for your claim.
+                                </div>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="mb-4">
+                                <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="description" th:field="*{description}" rows="4" required
+                                          placeholder="Please provide a detailed description of the incident..."></textarea>
+                                <div class="form-text text-muted">
+                                    <i class="bi bi-info-circle info-icon"></i> 
+                                    Include relevant details about what happened, when, where, and how it occurred.
+                                </div>
+                            </div>
+
+                            <!-- Supporting Document Upload -->
+                            <div class="mb-4">
+                                <label for="document" class="form-label">Supporting Documents</label>
+                                <input class="form-control" type="file" id="document" name="document">
+                                <div class="form-text text-muted">
+                                    <i class="bi bi-info-circle info-icon"></i> 
+                                    Upload any relevant documents that support your claim (police reports, photos, receipts, etc.).
+                                    Accepted formats: PDF, JPG, PNG (max 10MB).
+                                </div>
+                            </div>
+
+                            <!-- Terms and Conditions -->
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="terms" required>
+                                <label class="form-check-label" for="terms">
+                                    I confirm that all information provided is accurate and complete to the best of my knowledge.
+                                </label>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="/dashboard/claims" class="btn btn-outline-secondary me-md-2">Cancel</a>
+                                <button type="submit" class="btn btn-primary">Submit Claim</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Important Notes</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0">
+                            <li>All claims are subject to verification and approval by our claims department.</li>
+                            <li>You will receive notification about the status of your claim via email.</li>
+                            <li>Please ensure all information is accurate to avoid delays in processing.</li>
+                            <li>For assistance, contact our support team at support@insurance-system.com.</li>
+                        </ul>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // JavaScript to validate incident date is not in the future
+        document.getElementById('incidentDate').addEventListener('change', function() {
+            const selectedDate = new Date(this.value);
+            const today = new Date();
+            
+            if (selectedDate > today) {
+                alert('Incident date cannot be in the future.');
+                this.value = '';
+            }
+        });
+
+        // Validate claim amount is positive
+        document.getElementById('claimAmount').addEventListener('input', function() {
+            if (this.value < 0) {
+                this.value = 0;
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+missing coverageamount in InsuranceDetails.java
