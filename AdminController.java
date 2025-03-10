@@ -1,4 +1,5 @@
 package com.example.insurance_management_system.controller;
+import com.example.insurance_management_system.model.Claim;
 import com.example.insurance_management_system.model.Policy;
 import com.example.insurance_management_system.model.User;
 import com.example.insurance_management_system.service.AdminService;
@@ -15,15 +16,17 @@ public class AdminController {
 	@Autowired
     private AdminService adminService;
     
-    @GetMapping("/dashboard")
-    public String adminDashboard(Model model) {
-        List<User> users = adminService.getAllUsers();
-        List<Policy> policies = adminService.getAllPolicies();
-        
-        model.addAttribute("users", users);
-        model.addAttribute("policies", policies);
-        return "admin/dashboard";
-    }
+	@GetMapping("/dashboard")
+	public String adminDashboard(Model model) {
+	    List<User> users = adminService.getAllUsers();
+	    List<Policy> policies = adminService.getAllPolicies();
+	    List<Claim> claims = adminService.getAllClaims();
+	    
+	    model.addAttribute("users", users);
+	    model.addAttribute("policies", policies);
+	    model.addAttribute("claims", claims);
+	    return "admin/dashboard";
+	}
     
     @GetMapping("/users")
     public String manageUsers(Model model) {
@@ -100,5 +103,46 @@ public class AdminController {
         }
         
         return "redirect:/admin/policies/pending";
+    }
+    @GetMapping("/claims")
+    public String manageClaims(Model model) {
+        List<Claim> claims = adminService.getAllClaims();
+        model.addAttribute("claims", claims);
+        return "admin/manage-claims";
+    }
+
+    @PostMapping("/claims/{id}/process")
+    public String processClaim(
+            @PathVariable Long id,
+            @RequestParam String action,
+            @RequestParam(required = false) String rejectionReason,
+            RedirectAttributes redirectAttributes) {
+        
+        boolean success = false;
+        
+        if ("APPROVE".equals(action)) {
+            success = adminService.approveClaimByAdmin(id);
+            if (success) {
+                redirectAttributes.addFlashAttribute("successMessage", "Claim approved successfully");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Failed to approve claim");
+            }
+        } else if ("PROCESS".equals(action)) {
+            success = adminService.processClaimByAdmin(id);
+            if (success) {
+                redirectAttributes.addFlashAttribute("successMessage", "Claim marked as processing");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Failed to process claim");
+            }
+        } else if ("REJECT".equals(action)) {
+            success = adminService.rejectClaimByAdmin(id, rejectionReason);
+            if (success) {
+                redirectAttributes.addFlashAttribute("successMessage", "Claim rejected successfully");
+            } else {
+                redirectAttributes.addFlashAttribute("errorMessage", "Failed to reject claim");
+            }
+        }
+        
+        return "redirect:/admin/claims";
     }
 }
