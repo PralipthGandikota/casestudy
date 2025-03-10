@@ -1,6 +1,8 @@
 package com.example.insurance_management_system.controller;
 import com.example.insurance_management_system.model.InsuranceDetails;
+
 import com.example.insurance_management_system.model.Policy;
+import com.example.insurance_management_system.model.TopUp;
 import com.example.insurance_management_system.model.User;
 import com.example.insurance_management_system.service.PolicyService;
 import com.example.insurance_management_system.service.UserService;
@@ -34,6 +36,7 @@ public class PolicyController {
 	    public String showCreatePolicyForm(@PathVariable String type, Model model) {
 	        model.addAttribute("policyType", type);
 	        model.addAttribute("insuranceDetails", new InsuranceDetails());
+	        model.addAttribute("topUp", new TopUp());
 	        return "policy/create";
 	    }
 	    
@@ -42,11 +45,21 @@ public class PolicyController {
 	            @Valid @ModelAttribute InsuranceDetails insuranceDetails,
 	            BindingResult result,
 	            @RequestParam int durationYears,
+	            @RequestParam(required = false) String topUpType,
+	            @RequestParam(required = false, defaultValue = "0") double topUpCoverageAmount,
 	            Authentication authentication,
 	            RedirectAttributes redirectAttributes) {
 	        
 	        if (result.hasErrors()) {
 	            return "policy/create";
+	        }
+	     // Process top-up if selected
+	        if (topUpType != null && !topUpType.isEmpty() && topUpCoverageAmount > 0) {
+	            TopUp topUp = new TopUp();
+	            topUp.setTopupType(topUpType);
+	            topUp.setCoverageAmount(topUpCoverageAmount);
+	            topUp.setInsuranceDetails(insuranceDetails);
+	            insuranceDetails.setTopUp(topUp);
 	        }
 	        
 	        String username = authentication.getName();
@@ -68,11 +81,21 @@ public class PolicyController {
 	    public String createWholeLifePolicy(
 	            @Valid @ModelAttribute InsuranceDetails insuranceDetails,
 	            BindingResult result,
+	            @RequestParam(required = false) String topUpType,
+	            @RequestParam(required = false, defaultValue = "0") double topUpCoverageAmount,
 	            Authentication authentication,
 	            RedirectAttributes redirectAttributes) {
 	        
 	        if (result.hasErrors()) {
 	            return "policy/create";
+	        }
+	     // Process top-up if selected
+	        if (topUpType != null && !topUpType.isEmpty() && topUpCoverageAmount > 0) {
+	            TopUp topUp = new TopUp();
+	            topUp.setTopupType(topUpType);
+	            topUp.setCoverageAmount(topUpCoverageAmount);
+	            topUp.setInsuranceDetails(insuranceDetails);
+	            insuranceDetails.setTopUp(topUp);
 	        }
 	        
 	        String username = authentication.getName();
