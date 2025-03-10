@@ -52,4 +52,14 @@ public class DashboardController {
         
         return "policy/list";
     }
+ // In DashboardController.java
+    @GetMapping("/pending-policies")
+    public String pendingPolicies(Model model, Authentication authentication) {
+        User user = userService.findByUsername(authentication.getName())
+                    .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        List<Policy> pendingPolicies = policyService.getPendingPoliciesByUser(user);
+        model.addAttribute("pendingPolicies", pendingPolicies);
+        return "dashboard/pending-policies";
+    }
 }
