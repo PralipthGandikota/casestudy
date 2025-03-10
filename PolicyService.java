@@ -2,6 +2,8 @@ package com.example.insurance_management_system.service;
 import com.example.insurance_management_system.model.Policy;
 import com.example.insurance_management_system.model.InsuranceDetails;
 import com.example.insurance_management_system.model.User;
+import com.example.insurance_management_system.model.TopUp;
+import com.example.insurance_management_system.model.PremiumDetails;
 import com.example.insurance_management_system.repository.PolicyRepository;
 import com.example.insurance_management_system.repository.InsuranceDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,19 +51,9 @@ public class PolicyService {
         policy.setUser(user);
         policy.setCreatedAt(LocalDateTime.now()); // Explicitly set createdAt
         
-        // Calculate premium (simplified example calculation)
-        double basePremium = details.getLifeCoverAmount() * 0.0002; // Simplified premium calculation
-        
-        // Adjust for age
-        LocalDate now = LocalDate.now();
-        int age = now.getYear() - details.getDob().getYear();
-        double ageFactor = 1.0 + (age / 50.0);
-        
-        // Adjust for tobacco use
-        double tobaccoFactor = details.isTobaccoConsumer() ? 1.5 : 1.0;
-        
-        double finalPremium = basePremium * ageFactor * tobaccoFactor;
-        policy.setPremiumAmount(finalPremium);
+        // Calculate premium using the new method
+        PremiumDetails premiumDetails = calculatePremium(details, durationYears);
+        policy.setPremiumAmount(premiumDetails.getTotalPremium());
         
         // Set bidirectional relationship before saving
         policy.setInsuranceDetails(details);
@@ -87,19 +79,10 @@ public class PolicyService {
         policy.setStatus("ACTIVE");
         policy.setUser(user);
         
-        // Calculate premium (simplified example calculation)
-        double basePremium = details.getLifeCoverAmount() * 0.0005; // Higher premium for whole life
-        
-        // Adjust for age
-        LocalDate now = LocalDate.now();
-        int age = now.getYear() - details.getDob().getYear();
-        double ageFactor = 1.0 + (age / 40.0);
-        
-        // Adjust for tobacco use
-        double tobaccoFactor = details.isTobaccoConsumer() ? 1.7 : 1.0;
-        
-        double finalPremium = basePremium * ageFactor * tobaccoFactor;
-        policy.setPremiumAmount(finalPremium);
+        // Calculate premium using the new method
+        int durationYears = Period.between(LocalDate.now(), endDate).getYears();
+        PremiumDetails premiumDetails = calculatePremium(details, durationYears);
+        policy.setPremiumAmount(premiumDetails.getTotalPremium());
         
         // Set bidirectional relationship before saving
         policy.setInsuranceDetails(details);
@@ -121,19 +104,9 @@ public class PolicyService {
         policy.setUser(user);
         policy.setCreatedAt(LocalDateTime.now()); // Explicitly set createdAt
         
-        // Calculate premium (simplified example calculation)
-        double basePremium = details.getLifeCoverAmount() * 0.0003; // Medium premium for money back policy
-        
-        // Adjust for age
-        LocalDate now = LocalDate.now();
-        int age = now.getYear() - details.getDob().getYear();
-        double ageFactor = 1.0 + (age / 45.0);
-        
-        // Adjust for tobacco use
-        double tobaccoFactor = details.isTobaccoConsumer() ? 1.4 : 1.0;
-        
-        double finalPremium = basePremium * ageFactor * tobaccoFactor;
-        policy.setPremiumAmount(finalPremium);
+        // Calculate premium using the new method
+        PremiumDetails premiumDetails = calculatePremium(details, durationYears);
+        policy.setPremiumAmount(premiumDetails.getTotalPremium());
         
         // Set bidirectional relationship before saving
         policy.setInsuranceDetails(details);
@@ -155,19 +128,9 @@ public class PolicyService {
         policy.setUser(user);
         policy.setCreatedAt(LocalDateTime.now()); // Explicitly set createdAt
         
-        // Calculate premium (simplified example calculation)
-        double basePremium = details.getLifeCoverAmount() * 0.0004; // Medium-high premium for endowment
-        
-        // Adjust for age
-        LocalDate now = LocalDate.now();
-        int age = now.getYear() - details.getDob().getYear();
-        double ageFactor = 1.0 + (age / 45.0);
-        
-        // Adjust for tobacco use
-        double tobaccoFactor = details.isTobaccoConsumer() ? 1.3 : 1.0;
-        
-        double finalPremium = basePremium * ageFactor * tobaccoFactor;
-        policy.setPremiumAmount(finalPremium);
+        // Calculate premium using the new method
+        PremiumDetails premiumDetails = calculatePremium(details, durationYears);
+        policy.setPremiumAmount(premiumDetails.getTotalPremium());
         
         // Set bidirectional relationship before saving
         policy.setInsuranceDetails(details);
@@ -175,6 +138,84 @@ public class PolicyService {
         
         // Save policy with details in a single transaction
         return policyRepository.save(policy);
+    }
+    
+    /**
+     * Calculate premium based on user details, policy duration, and coverage amount
+     * @param details Insurance details with user information
+     * @param durationYears Policy duration in years
+     * @return PremiumDetails object containing premium calculation breakdown
+     */
+    public PremiumDetails calculatePremium(InsuranceDetails details, int durationYears) {
+        PremiumDetails premiumDetails = new PremiumDetails();
+        
+        // Calculate current age
+        int currentAge = Period.between(details.getDob(), LocalDate.now()).getYears();
+        int premiumAge = durationYears + currentAge;
+        
+        premiumDetails.setCurrentAge(currentAge);
+        premiumDetails.setPolicyDuration(durationYears);
+        premiumDetails.setLifeCoverAmount(details.getLifeCoverAmount());
+        
+        // Initialize risk factor
+        double riskFactor = 1.0;
+        double tobaccoCharge = 0.0;
+        
+        // Tobacco consumption charge
+        if (details.isTobaccoConsumer()) {
+            riskFactor *= 1.2;
+            tobaccoCharge = 0.2 * (details.getLifeCoverAmount() / 1000.0);
+        }
+        premiumDetails.setTobaccoCharge(tobaccoCharge);
+        
+        // Age-based risk factor
+        double ageRiskCharge = 0.0;
+        if (premiumAge < 35) {
+            // No additional risk for younger ages
+        } else if (premiumAge < 65) {
+            riskFactor *= (1 + (premiumAge - 35) * 0.01);
+            ageRiskCharge = (premiumAge - 35) * 0.01 * (details.getLifeCoverAmount() / 1000.0);
+        } else if (premiumAge < 80) {
+            double riskAt65 = 1 + (65 - 35) * 0.01;
+            riskFactor *= riskAt65 * Math.exp((premiumAge - 65) * 0.05);
+            ageRiskCharge = riskFactor * (details.getLifeCoverAmount() / 1000.0);
+        } else {
+            double riskAt80 = (1 + (65 - 35) * 0.01) * Math.exp((80 - 65) * 0.05);
+            riskFactor *= riskAt80 * Math.exp((premiumAge - 80) * 0.1);
+            ageRiskCharge = riskFactor * (details.getLifeCoverAmount() / 1000.0);
+        }
+        premiumDetails.setAgeRiskCharge(ageRiskCharge);
+        premiumDetails.setRiskFactor(riskFactor);
+        
+        // Base premium calculation
+        double basePremium = (details.getLifeCoverAmount() / 1000.0) * riskFactor;
+        premiumDetails.setBasePremium(basePremium);
+        
+        // Top-up premium calculation
+        double topUpPremium = 0.0;
+        if (details.getTopUp() != null) {
+            TopUp topUp = details.getTopUp();
+            if ("Accident".equalsIgnoreCase(topUp.getTopupType())) {
+                topUpPremium = (topUp.getCoverageAmount() / 50000.0) * 50.0;
+            } else if ("Critical".equalsIgnoreCase(topUp.getTopupType())) {
+                if (topUp.getCoverageAmount() <= 300000) {
+                    topUpPremium = 100;
+                } else {
+                    topUpPremium = 100 + ((topUp.getCoverageAmount() - 300000) / 300000.0) * 400;
+                }
+            }
+        }
+        premiumDetails.setTopUpPremium(topUpPremium);
+        
+        // Calculate GST and total premium
+        double totalPremiumBeforeGST = basePremium + topUpPremium;
+        double gstAmount = totalPremiumBeforeGST * 0.18;
+        double totalPremium = totalPremiumBeforeGST + gstAmount;
+        
+        premiumDetails.setGstAmount(gstAmount);
+        premiumDetails.setTotalPremium(totalPremium);
+        
+        return premiumDetails;
     }
     
     @Transactional
