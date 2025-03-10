@@ -69,6 +69,11 @@ public class ClaimService {
             throw new RuntimeException("Cannot file claim for inactive policy");
         }
         
+     // Add this check for policy approval status
+        if (!"APPROVED".equals(policy.getApprovalStatus())) {
+            throw new RuntimeException("Cannot file claim for unapproved policy");
+        }
+        
         // Generate unique claim number
         String claimNumber = "CL-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
         claim.setClaimNumber(claimNumber);
