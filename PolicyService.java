@@ -77,6 +77,7 @@ public class PolicyService {
         policy.setEndDate(endDate);
         
         policy.setStatus("ACTIVE");
+        policy.setApprovalStatus("PENDING");
         policy.setUser(user);
         
         // Calculate premium using the new method
@@ -101,6 +102,7 @@ public class PolicyService {
         policy.setStartDate(LocalDate.now());
         policy.setEndDate(LocalDate.now().plusYears(durationYears));
         policy.setStatus("ACTIVE");
+        policy.setApprovalStatus("PENDING");
         policy.setUser(user);
         policy.setCreatedAt(LocalDateTime.now()); // Explicitly set createdAt
         
@@ -125,6 +127,7 @@ public class PolicyService {
         policy.setStartDate(LocalDate.now());
         policy.setEndDate(LocalDate.now().plusYears(durationYears));
         policy.setStatus("ACTIVE");
+        policy.setApprovalStatus("PENDING");
         policy.setUser(user);
         policy.setCreatedAt(LocalDateTime.now()); // Explicitly set createdAt
         
@@ -216,6 +219,11 @@ public class PolicyService {
         premiumDetails.setTotalPremium(totalPremium);
         
         return premiumDetails;
+    }
+    
+    @Transactional(readOnly = true)
+    public List<Policy> getPendingPoliciesByUser(User user) {
+        return policyRepository.findByUserAndApprovalStatus(user, "PENDING");
     }
     
     @Transactional
