@@ -18,7 +18,10 @@ public class AdminController {
     @GetMapping("/dashboard")
     public String adminDashboard(Model model) {
         List<User> users = adminService.getAllUsers();
+        List<Policy> policies = adminService.getAllPolicies();
+        
         model.addAttribute("users", users);
+        model.addAttribute("policies", policies);
         return "admin/dashboard";
     }
     
@@ -50,6 +53,13 @@ public class AdminController {
         return "admin/manage-policies";
     }
     
+    @GetMapping("/policies/pending")
+    public String pendingPolicies(Model model) {
+        List<Policy> pendingPolicies = adminService.getPendingPolicies();
+        model.addAttribute("policies", pendingPolicies);
+        return "admin/pending-policies";
+    }
+    
     @PostMapping("/policies/{id}/cancel")
     public String cancelPolicy(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         boolean success = adminService.cancelPolicyByAdmin(id);
@@ -61,5 +71,34 @@ public class AdminController {
         }
         
         return "redirect:/admin/policies";
+    }
+    
+    @PostMapping("/policies/{id}/approve")
+    public String approvePolicy(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        boolean success = adminService.approvePolicyByAdmin(id);
+        
+        if (success) {
+            redirectAttributes.addFlashAttribute("successMessage", "Policy approved successfully");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to approve policy");
+        }
+        
+        return "redirect:/admin/policies/pending";
+    }
+    
+    @PostMapping("/policies/{id}/reject")
+    public String rejectPolicy(
+            @PathVariable Long id, 
+            @RequestParam String reason,
+            RedirectAttributes redirectAttributes) {
+        boolean success = adminService.rejectPolicyByAdmin(id, reason);
+        
+        if (success) {
+            redirectAttributes.addFlashAttribute("successMessage", "Policy rejected successfully");
+        } else {
+            redirectAttributes.addFlashAttribute("errorMessage", "Failed to reject policy");
+        }
+        
+        return "redirect:/admin/policies/pending";
     }
 }
