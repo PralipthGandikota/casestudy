@@ -12,4 +12,6 @@ public interface PolicyRepository extends JpaRepository<Policy, Long> {
     List<Policy> findByUserAndStatus(User user, String status);
     Optional<Policy> findByPolicyNumber(String policyNumber);
     List<Policy> findByApprovalStatus(String approvalStatus);
+ // In PolicyRepository.java
+    List<Policy> findByUserAndApprovalStatus(User user, String approvalStatus);
 }
