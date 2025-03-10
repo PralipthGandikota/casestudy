@@ -1,3 +1,7 @@
+<!--templates/admin/dashboard, error on line 96,Exception evaluating SpringEL expression: "#lists.size(#arrays.toArray(policies.?[status == 'ACTIVE']))"
+The policies object is null or not properly initialized in the model.
+The Spring Expression Language (SpEL) is trying to filter policies by status == 'ACTIVE', but it cannot operate on null.
+This results in a SpEL evaluation exception (EL1015E): "Cannot perform selection on input data of type 'null'."-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
