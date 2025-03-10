@@ -1,4 +1,3 @@
-<!--templates/dashboard/policies.html-->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -150,8 +149,20 @@
                         <div class="card policy-card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <span th:text="${policy.policyType}">Policy Type</span>
-                                <span th:class="'badge policy-badge ' + ${policy.status == 'ACTIVE' ? 'policy-active' : (policy.status == 'CANCELLED' ? 'policy-cancelled' : 'policy-expired')}" 
-                                      th:text="${policy.status}">Status</span>
+								<span th:class="'badge policy-badge ' + 
+								      ${policy.approvalStatus == 'PENDING' ? 'bg-warning' : 
+								      (policy.approvalStatus == 'APPROVED' ? 'policy-active' : 
+								      (policy.approvalStatus == 'REJECTED' ? 'policy-cancelled' : 'policy-expired'))}" 
+								      th:text="${policy.approvalStatus == 'PENDING' ? 'Pending Approval' : 
+								              (policy.approvalStatus == 'APPROVED' ? 'Approved' : 
+								              (policy.approvalStatus == 'REJECTED' ? 'Rejected' : policy.approvalStatus))}">
+								</span>
+								<!-- Add a tooltip or info section for rejected policies -->
+								<div th:if="${policy.approvalStatus == 'REJECTED' && policy.rejectionReason != null}" 
+								     class="mt-2 small text-danger">
+								    <i class="bi bi-info-circle"></i> 
+								    <span th:text="${policy.rejectionReason}">Rejection reason</span>
+								</div>
                             </div>
                             <div class="card-body">
                                 <h5 class="card-title" th:text="${policy.policyNumber}">Policy Number</h5>
