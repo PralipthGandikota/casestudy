@@ -1,6 +1,5 @@
 package com.example.insurance_management_system.service;
 
-import com.example.insurance_management_system.service.PolicyService;
 import com.example.insurance_management_system.model.Policy;
 import com.example.insurance_management_system.model.User;
 import com.example.insurance_management_system.repository.PolicyRepository;
@@ -70,25 +69,4 @@ public class AdminService {
 	        
 	        return false;
 	    }
-	    
-	 // In AdminService.java - Add methods for policy approval
-	    @Transactional
-	    public Policy approvePolicy(Long policyId) {
-	        return policyService.approvePolicy(policyId);
-	    }
-
-	    @Transactional
-	    public Policy rejectPolicy(Long policyId, String reason) {
-	        return policyService.rejectPolicy(policyId, reason);
-	    }
-
-	    @Transactional
-	    public Policy holdPolicy(Long policyId, String reason) {
-	        return policyService.putPolicyOnHold(policyId, reason);
-	    }
-
-	    @Transactional(readOnly = true)
-	    public List<Policy> getPendingPolicies() {
-	        return policyService.getPendingPolicies();
-	    }	
 }
