@@ -124,7 +124,7 @@
                                     <option value="">-- Select Policy --</option>
                                     <option th:each="policy : ${policies}" 
                                             th:value="${policy.id}" 
-                                            th:text="${policy.policyNumber + ' - ' + policy.policyType + ' (' + policy.insuranceDetails.coverageAmount + ' coverage)'}">
+                                            th:text="${policy.policyNumber + ' - ' + policy.policyType + ' (' + policy.insuranceDetails.lifeCoverAmount + ' coverage)'}">
                                     </option>
                                 </select>
                                 <div class="form-text text-muted">
