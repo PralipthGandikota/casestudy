@@ -7,8 +7,9 @@ import com.example.insurance_management_system.model.Policy;
 import com.example.insurance_management_system.model.User;
 
 @Repository
-public interface PolicyRepository extends JpaRepository <Policy, Long> {
-	List<Policy> findByUser(User user);
+public interface PolicyRepository extends JpaRepository<Policy, Long> {
+    List<Policy> findByUser(User user);
     List<Policy> findByUserAndStatus(User user, String status);
     Optional<Policy> findByPolicyNumber(String policyNumber);
+    List<Policy> findByApprovalStatus(String approvalStatus);
 }
