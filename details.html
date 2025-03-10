@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance System - Policy Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        .sidebar {
+            height: 100vh;
+            background-color: #343a40;
+            color: white;
+        }
+        .sidebar .nav-link {
+            color: #c2c7d0;
+            margin: 5px 0;
+        }
+        .sidebar .nav-link:hover {
+            color: white;
+        }
+        .sidebar .nav-link.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .detail-card {
+            border-radius: 10px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        .detail-card:hover {
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        .card-header {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .status-badge {
+            padding: 8px 12px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .status-active {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .policy-info-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .policy-info-item:last-child {
+            border-bottom: none;
+        }
+        .action-button {
+            transition: all 0.3s;
+        }
+        .action-button:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4 p-3">
+                        <h4>Insurance System</h4>
+                    </div>
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard">
+                                <i class="bi bi-house-door me-2"></i>Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/dashboard/policies">
+                                <i class="bi bi-shield-check me-2"></i>Policies
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard/profile">
+                                <i class="bi bi-person me-2"></i>Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard/claims">
+                                <i class="bi bi-file-earmark-text me-2"></i>Claims
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/dashboard/payments">
+                                <i class="bi bi-credit-card me-2"></i>Payments
+                            </a>
+                        </li>
+                        <li class="nav-item mt-5">
+                            <a class="nav-link" href="/auth/logout">
+                                <i class="bi bi-box-arrow-right me-2"></i>Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">Policy Details</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <a href="/dashboard/policies" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Policies
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-printer"></i> Print
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Success and Error Messages -->
+                <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <span th:text="${successMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+
+                <!-- Policy Summary Card -->
+                <div class="card detail-card mb-4">
+                    <div class="card-header py-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <h5 class="mb-0">Policy #<span th:text="${policy.policyNumber}"></span></h5>
+                            </div>
+                            <div class="col-md-6 text-md-end">
+                                <span th:if="${policy.status == 'ACTIVE'}" class="status-badge status-active">
+                                    <i class="bi bi-check-circle me-1"></i> Active
+                                </span>
+                                <span th:if="${policy.status == 'CANCELLED'}" class="status-badge status-cancelled">
+                                    <i class="bi bi-x-circle me-1"></i> Cancelled
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="policy-info-item">
+                                    <strong>Policy Type:</strong>
+                                    <span th:text="${policy.policyType}" class="ms-2"></span>
+                                </div>
+                                <div class="policy-info-item">
+                                    <strong>Start Date:</strong>
+                                    <span th:text="${#temporals.format(policy.startDate, 'dd MMM yyyy')}" class="ms-2"></span>
+                                </div>
+                                <div class="policy-info-item">
+                                    <strong>End Date:</strong>
+                                    <span th:text="${#temporals.format(policy.endDate, 'dd MMM yyyy')}" class="ms-2"></span>
+                                </div>
+                                <div class="policy-info-item">
+                                    <strong>Premium Amount:</strong>
+                                    <span class="ms-2">₹<span th:text="${#numbers.formatDecimal(policy.premiumAmount, 0, 'COMMA', 2, 'POINT')}"></span></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="policy-info-item">
+                                    <strong>Created:</strong>
+                                    <span th:text="${#temporals.format(policy.createdAt, 'dd MMM yyyy HH:mm')}" class="ms-2"></span>
+                                </div>
+                                <div th:if="${policy.cancelledAt}" class="policy-info-item">
+                                    <strong>Cancelled:</strong>
+                                    <span th:text="${#temporals.format(policy.cancelledAt, 'dd MMM yyyy HH:mm')}" class="ms-2"></span>
+                                </div>
+                                <div class="policy-info-item">
+                                    <strong>Policy Holder:</strong>
+                                    <span th:text="${policy.user.firstName + ' ' + policy.user.lastName}" class="ms-2"></span>
+                                </div>
+                                <div class="policy-info-item">
+                                    <strong>Duration:</strong>
+                                    <span th:with="years=${policy.startDate.until(policy.endDate).years}" 
+                                          th:text="${years} + ' Year' + (${years} != 1 ? 's' : '')" class="ms-2"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white" th:if="${policy.status == 'ACTIVE'}">
+                        <form th:action="@{/policy/cancel/{id}(id=${policy.id})}" method="post" onsubmit="return confirm('Are you sure you want to cancel this policy? This action cannot be undone.');">
+                            <button type="submit" class="btn btn-danger">
+                                <i class="bi bi-x-circle me-1"></i> Cancel Policy
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Insurance Details Card -->
+                <div class="card detail-card mb-4">
+                    <div class="card-header py-3">
+                        <h5 class="mb-0">Insurance Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="policy-info-item">
+                                    <strong>Full Name:</strong>
+                                    <span th:text="${policy.insuranceDetails.firstName + ' ' + policy.insuranceDetails.lastName}" class="ms-2"></span>
+                                </div>
+                                <div class="policy-info-item">
+                                    <strong>Date of Birth:</strong>
+                                    <span th:text="${#temporals.format(policy.insuranceDetails.dob, 'dd MMM yyyy')}" class="ms-2"></span>
+                                </div>
+                                <div class="policy-info-item">
+                                    <strong>Email:</strong>
+                                    <span th:text="${policy.insuranceDetails.email}" class="ms-2"></span>
+                                </div>
+                                <div class="policy-info-item">
+                                    <strong>Mobile Number:</strong>
+                                    <span th:text="${policy.insuranceDetails.mobileNumber}" class="ms-2"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="policy-info-item">
+                                    <strong>Gender:</strong>
+                                    <span th:text="${policy.insuranceDetails.gender}" class="ms-2"></span>
+                                </div>
+                                <div class="policy-info-item">
+                                    <strong>Tobacco Consumer:</strong>
+                                    <span th:text="${policy.insuranceDetails.tobaccoConsumer ? 'Yes' : 'No'}" class="ms-2"></span>
+                                </div>
+                                <div class="policy-info-item">
+                                    <strong>Annual Income:</strong>
+                                    <span class="ms-2">₹<span th:text="${#numbers.formatDecimal(policy.insuranceDetails.annualIncome, 0, 'COMMA', 2, 'POINT')}"></span></span>
+                                </div>
+                                <div class="policy-info-item">
+                                    <strong>Life Cover Amount:</strong>
+                                    <span class="ms-2">₹<span th:text="${#numbers.formatDecimal(policy.insuranceDetails.lifeCoverAmount, 0, 'COMMA', 2, 'POINT')}"></span></span>
+                                </div>
+                                <div class="policy-info-item">
+                                    <strong>Life Cover Age:</strong>
+                                    <span th:text="${policy.insuranceDetails.lifeCoverAge} + ' years'" class="ms-2"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Cards Row -->
+                <div class="row mt-4">
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card action-button h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-file-earmark-text text-primary" style="font-size: 2rem;"></i>
+                                <h5 class="card-title mt-3">File a Claim</h5>
+                                <p class="card-text">Create a new insurance claim request</p>
+                                <a href="#" class="btn btn-outline-primary" th:classappend="${policy.status != 'ACTIVE'} ? 'disabled'" th:disabled="${policy.status != 'ACTIVE'}">File Claim</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card action-button h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-credit-card text-success" style="font-size: 2rem;"></i>
+                                <h5 class="card-title mt-3">Make Payment</h5>
+                                <p class="card-text">Pay your premium amount</p>
+                                <a href="#" class="btn btn-outline-success" th:classappend="${policy.status != 'ACTIVE'} ? 'disabled'" th:disabled="${policy.status != 'ACTIVE'}">Pay Now</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card action-button h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-receipt text-warning" style="font-size: 2rem;"></i>
+                                <h5 class="card-title mt-3">View Documents</h5>
+                                <p class="card-text">Access your policy documents</p>
+                                <a href="#" class="btn btn-outline-warning">View Documents</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-4">
+                        <div class="card action-button h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-chat-dots text-info" style="font-size: 2rem;"></i>
+                                <h5 class="card-title mt-3">Contact Support</h5>
+                                <p class="card-text">Get help with your policy</p>
+                                <a href="#" class="btn btn-outline-info">Contact Us</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
