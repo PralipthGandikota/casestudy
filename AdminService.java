@@ -1,7 +1,9 @@
 package com.example.insurance_management_system.service;
 
+import com.example.insurance_management_system.model.Claim;
 import com.example.insurance_management_system.model.Policy;
 import com.example.insurance_management_system.model.User;
+import com.example.insurance_management_system.repository.ClaimRepository;
 import com.example.insurance_management_system.repository.PolicyRepository;
 import com.example.insurance_management_system.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,9 @@ import java.util.Optional;
 public class AdminService {
 	 @Autowired
 	    private UserRepository userRepository;
+	 
+	 @Autowired
+	 private ClaimRepository claimRepository;
 	    
 	    @Autowired
 	    private PolicyRepository policyRepository;
@@ -23,6 +28,66 @@ public class AdminService {
 	    @Transactional(readOnly = true)
 	    public List<User> getAllUsers() {
 	        return userRepository.findAll();
+	    }
+	    @Transactional(readOnly = true)
+	    public List<Claim> getAllClaims() {
+	        return claimRepository.findAll();
+	    }
+	    @Transactional
+	    public boolean approveClaimByAdmin(Long claimId) {
+	        Optional<Claim> claimOpt = claimRepository.findById(claimId);
+	        
+	        if (claimOpt.isPresent()) {
+	            Claim claim = claimOpt.get();
+	            
+	            // Only approve if it's in PENDING status
+	            if ("PENDING".equals(claim.getStatus())) {
+	                claim.setStatus("APPROVED");
+	                claim.setProcessedAt(LocalDateTime.now());
+	                claimRepository.save(claim);
+	                return true;
+	            }
+	        }
+	        
+	        return false;
+	    }
+
+	    @Transactional
+	    public boolean processClaimByAdmin(Long claimId) {
+	        Optional<Claim> claimOpt = claimRepository.findById(claimId);
+	        
+	        if (claimOpt.isPresent()) {
+	            Claim claim = claimOpt.get();
+	            
+	            // Only mark as processing if it's in PENDING status
+	            if ("PENDING".equals(claim.getStatus())) {
+	                claim.setStatus("PROCESSING");
+	                claimRepository.save(claim);
+	                return true;
+	            }
+	        }
+	        
+	        return false;
+	    }
+
+	    @Transactional
+	    public boolean rejectClaimByAdmin(Long claimId, String reason) {
+	        Optional<Claim> claimOpt = claimRepository.findById(claimId);
+	        
+	        if (claimOpt.isPresent()) {
+	            Claim claim = claimOpt.get();
+	            
+	            // Only reject if it's in PENDING status
+	            if (claim.isProcessing() || claim.isPending()) {
+	                claim.setStatus("REJECTED");
+	                claim.setRejectionReason(reason);
+	                claim.setProcessedAt(LocalDateTime.now());
+	                claimRepository.save(claim);
+	                return true;
+	            }
+	        }
+	        
+	        return false;
 	    }
 	    
 	    @Transactional(readOnly = true)
