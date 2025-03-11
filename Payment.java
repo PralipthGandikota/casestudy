@@ -10,112 +10,36 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    @Column(nullable = false, unique = true)
     private String paymentId;
     
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "policy_id")
+    @ManyToOne
+    @JoinColumn(name = "policy_id", nullable = false)
     private Policy policy;
     
+    @Column(nullable = false)
     private double amount;
     
+    @Column(nullable = false)
+    private LocalDateTime paymentDate;
+    
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PaymentFrequency frequency;
     
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private PaymentMethod method;
     
-    private LocalDateTime paymentDate;
-    
-    private boolean successful;
-    
-    @Enumerated(EnumType.STRING)
-    private PaymentStatus status;
-    
-    // For tracking UPI ID or bank used
+    @Column
     private String paymentDetails;
     
-    public Payment() {
-    }
+    @Column(nullable = false)
+    private boolean isSuccessful;
     
-    public Long getId() {
-        return id;
-    }
-    
-    public void setId(Long id) {
-        this.id = id;
-    }
-    
-    public String getPaymentId() {
-        return paymentId;
-    }
-    
-    public void setPaymentId(String paymentId) {
-        this.paymentId = paymentId;
-    }
-    
-    public Policy getPolicy() {
-        return policy;
-    }
-    
-    public void setPolicy(Policy policy) {
-        this.policy = policy;
-    }
-    
-    public double getAmount() {
-        return amount;
-    }
-    
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
-    
-    public PaymentFrequency getFrequency() {
-        return frequency;
-    }
-    
-    public void setFrequency(PaymentFrequency frequency) {
-        this.frequency = frequency;
-    }
-    
-    public PaymentMethod getMethod() {
-        return method;
-    }
-    
-    public void setMethod(PaymentMethod method) {
-        this.method = method;
-    }
-    
-    public LocalDateTime getPaymentDate() {
-        return paymentDate;
-    }
-    
-    public void setPaymentDate(LocalDateTime paymentDate) {
-        this.paymentDate = paymentDate;
-    }
-    
-    public boolean isSuccessful() {
-        return successful;
-    }
-    
-    public void setSuccessful(boolean successful) {
-        this.successful = successful;
-    }
-    
-    public PaymentStatus getStatus() {
-        return status;
-    }
-    
-    public void setStatus(PaymentStatus status) {
-        this.status = status;
-    }
-    
-    public String getPaymentDetails() {
-        return paymentDetails;
-    }
-    
-    public void setPaymentDetails(String paymentDetails) {
-        this.paymentDetails = paymentDetails;
-    }
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus status;
     
     public enum PaymentFrequency {
         MONTHLY,
@@ -131,6 +55,88 @@ public class Payment {
     public enum PaymentStatus {
         PENDING,
         SUCCESSFUL,
-        FAILED
+        FAILED,
+        REFUNDED
+    }
+    
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(String paymentId) {
+        this.paymentId = paymentId;
+    }
+
+    public Policy getPolicy() {
+        return policy;
+    }
+
+    public void setPolicy(Policy policy) {
+        this.policy = policy;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
+    public LocalDateTime getPaymentDate() {
+        return paymentDate;
+    }
+
+    public void setPaymentDate(LocalDateTime paymentDate) {
+        this.paymentDate = paymentDate;
+    }
+
+    public PaymentFrequency getFrequency() {
+        return frequency;
+    }
+
+    public void setFrequency(PaymentFrequency frequency) {
+        this.frequency = frequency;
+    }
+
+    public PaymentMethod getMethod() {
+        return method;
+    }
+
+    public void setMethod(PaymentMethod method) {
+        this.method = method;
+    }
+
+    public String getPaymentDetails() {
+        return paymentDetails;
+    }
+
+    public void setPaymentDetails(String paymentDetails) {
+        this.paymentDetails = paymentDetails;
+    }
+
+    public boolean isSuccessful() {
+        return isSuccessful;
+    }
+
+    public void setSuccessful(boolean successful) {
+        isSuccessful = successful;
+    }
+
+    public PaymentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PaymentStatus status) {
+        this.status = status;
     }
 }
