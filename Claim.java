@@ -25,7 +25,8 @@ public class Claim {
     
     @Column(name = "incident_date", nullable = false)
     private LocalDate incidentDate;
-    
+    @Column(name = "processed_at")
+    private LocalDateTime processedAt;
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
     
@@ -84,6 +85,13 @@ public class Claim {
     
     public LocalDate getFiledDate() {
         return filedDate;
+    }
+    
+    public LocalDateTime getProcessedAt() {
+        return processedAt;
+    }
+    public void setProcessedAt(LocalDateTime processedAt) {
+        this.processedAt = processedAt;
     }
     
     public void setFiledDate(LocalDate filedDate) {
