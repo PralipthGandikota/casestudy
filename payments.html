@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy Payment Portal</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .payment-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .payment-card:hover {
+            transform: translateY(-5px);
+        }
+        .payment-option {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .payment-option:hover {
+            border-color: #0d6efd;
+            background-color: #f1f8ff;
+        }
+        .payment-option.selected {
+            border-color: #0d6efd;
+            background-color: #f1f8ff;
+            box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+        }
+        .payment-method {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 10px;
+            margin-right: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        .payment-method:hover {
+            border-color: #0d6efd;
+        }
+        .payment-method.selected {
+            border-color: #0d6efd;
+            background-color: #f1f8ff;
+        }
+        .badge-discount {
+            background-color: #28a745;
+            color: white;
+            font-weight: bold;
+        }
+        .success-animation {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .checkmark-circle {
+            width: 80px;
+            height: 80px;
+            position: relative;
+            display: inline-block;
+            vertical-align: top;
+        }
+        .checkmark-circle .background {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #28a745;
+            position: absolute;
+        }
+        .checkmark-circle .checkmark {
+            border-radius: 5px;
+        }
+        .checkmark-circle .checkmark.draw:after {
+            animation-delay: 100ms;
+            animation-duration: 1s;
+            animation-timing-function: ease;
+            animation-name: checkmark;
+            transform: scaleX(-1) rotate(135deg);
+            animation-fill-mode: forwards;
+        }
+        .checkmark-circle .checkmark:after {
+            opacity: 0;
+            height: 40px;
+            width: 20px;
+            transform-origin: left top;
+            border-right: 5px solid #fff;
+            border-top: 5px solid #fff;
+            content: '';
+            left: 16px;
+            top: 40px;
+            position: absolute;
+        }
+        @keyframes checkmark {
+            0% {
+                height: 0;
+                width: 0;
+                opacity: 1;
+            }
+            20% {
+                height: 0;
+                width: 20px;
+                opacity: 1;
+            }
+            40% {
+                height: 40px;
+                width: 20px;
+                opacity: 1;
+            }
+            100% {
+                height: 40px;
+                width: 20px;
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center" id="main-content">
+            <div class="col-md-8">
+                <!-- Policy Payment Card -->
+                <div class="card mb-4 payment-card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Policy Premium Payment</h4>
+                    </div>
+                    <div class="card-body">
+                        <div id="policy-info">
+                            <div class="alert alert-info" id="policy-status-section">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <span id="policy-status-message">Loading policy status...</span>
+                            </div>
+                            
+                            <div id="payment-form-container" style="display: none;">
+                                <div class="mb-4">
+                                    <h5>Policy Details</h5>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Policy Number:</strong> <span id="policy-number"></span></p>
+                                            <p><strong>Policy Type:</strong> <span id="policy-type"></span></p>
+                                            <p><strong>Status:</strong> <span id="policy-status" class="badge bg-success">ACTIVE</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Start Date:</strong> <span id="start-date"></span></p>
+                                            <p><strong>End Date:</strong> <span id="end-date"></span></p>
+                                            <p><strong>Base Premium:</strong> ₹<span id="premium-amount"></span>/month</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <h5>Select Payment Frequency</h5>
+                                <div class="mb-4">
+                                    <div class="payment-option selected" data-option="monthly" onclick="selectPaymentOption('monthly')">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">Monthly Payment</h6>
+                                                <p class="mb-0 text-muted small">Pay your premium every month</p>
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-0">₹<span id="monthly-amount"></span></h5>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="payment-option" data-option="half-yearly" onclick="selectPaymentOption('half-yearly')">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">Half Yearly Payment <span class="badge badge-discount">15% OFF</span></h6>
+                                                <p class="mb-0 text-muted small">Pay once every 6 months and save</p>
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-0">₹<span id="half-yearly-amount"></span></h5>
+                                                <small class="text-success">Save ₹<span id="half-yearly-savings"></span></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="payment-option" data-option="yearly" onclick="selectPaymentOption('yearly')">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1">Yearly Payment <span class="badge badge-discount">25% OFF</span></h6>
+                                                <p class="mb-0 text-muted small">Pay once a year and maximize your savings</p>
+                                            </div>
+                                            <div>
+                                                <h5 class="mb-0">₹<span id="yearly-amount"></span></h5>
+                                                <small class="text-success">Save ₹<span id="yearly-savings"></span></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <h5>Select Payment Method</h5>
+                                <div class="mb-4">
+                                    <div class="row">
+                                        <div class="col-6 col-md-3 mb-3">
+                                            <div class="payment-method selected" data-method="upi" onclick="selectPaymentMethod('upi')">
+                                                <i class="fas fa-mobile-alt fa-2x mb-2"></i>
+                                                <p class="mb-0">UPI</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3 mb-3">
+                                            <div class="payment-method" data-method="netbanking" onclick="selectPaymentMethod('netbanking')">
+                                                <i class="fas fa-university fa-2x mb-2"></i>
+                                                <p class="mb-0">Net Banking</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <div class="payment-details" id="upi-payment" style="display: block;">
+                                    <h5>UPI Payment</h5>
+                                    <div class="mb-3">
+                                        <label for="upi-id" class="form-label">UPI ID</label>
+                                        <input type="text" class="form-control" id="upi-id" placeholder="yourname@upi">
+                                    </div>
+                                </div>
+                                
+                                <div class="payment-details" id="netbanking-payment" style="display: none;">
+                                    <h5>Net Banking</h5>
+                                    <div class="mb-3">
+                                        <label for="bank-select" class="form-label">Select Bank</label>
+                                        <select class="form-select" id="bank-select">
+                                            <option value="">Select your bank</option>
+                                            <option value="sbi">State Bank of India</option>
+                                            <option value="hdfc">HDFC Bank</option>
+                                            <option value="icici">ICICI Bank</option>
+                                            <option value="axis">Axis Bank</option>
+                                            <option value="kotak">Kotak Mahindra Bank</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="row mt-4">
+                                    <div class="col-md-6">
+                                        <h5>Payment Summary</h5>
+                                        <div class="bg-light p-3 rounded">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>Premium Amount:</span>
+                                                <span>₹<span id="summary-premium"></span></span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2" id="summary-discount-row">
+                                                <span>Discount:</span>
+                                                <span class="text-success">-₹<span id="summary-discount"></span></span>
+                                            </div>
+                                            <hr>
+                                            <div class="d-flex justify-content-between">
+                                                <strong>Total:</strong>
+                                                <strong>₹<span id="summary-total"></span></strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 d-flex align-items-end justify-content-end">
+                                        <button class="btn btn-primary btn-lg" id="pay-now-btn" onclick="processPayment()">
+                                            Pay Now <i class="fas fa-arrow-right ms-2"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Success Modal -->
+        <div class="modal fade" id="success-modal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body text-center p-5">
+                        <div class="success-animation">
+                            <div class="checkmark-circle">
+                                <div class="background"></div>
+                                <div class="checkmark draw"></div>
+                            </div>
+                            <h3 class="mt-4">Payment Successful!</h3>
+                            <p class="mb-4">Your premium payment has been processed successfully.</p>
+                            <div class="bg-light p-3 rounded text-start">
+                                <p class="mb-2"><strong>Payment ID:</strong> <span id="payment-id"></span></p>
+                                <p class="mb-2"><strong>Policy ID:</strong> <span id="receipt-policy-id"></span></p>
+                                <p class="mb-2"><strong>Amount Paid:</strong> ₹<span id="receipt-amount"></span></p>
+                                <p class="mb-0"><strong>Date:</strong> <span id="payment-date"></span></p>
+                            </div>
+                            <div class="mt-4">
+                                <button type="button" class="btn btn-outline-secondary me-2" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick="redirectToDashboard()">Go to Dashboard</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Example policy data (in production this would come from your backend)
+        const policy = {
+            id: 123,
+            policyNumber: "POL-A7B8C9D0",
+            policyType: "TERM",
+            startDate: "2025-01-15",
+            endDate: "2045-01-15",
+            premiumAmount: 3500,
+            status: "ACTIVE",
+            approvalStatus: "APPROVED" // This is crucial for payment eligibility
+        };
+        
+        let selectedPaymentOption = "monthly";
+        let selectedPaymentMethod = "upi";
+        
+        // Initialize the page
+        document.addEventListener("DOMContentLoaded", function() {
+            // Check if policy is approved and active
+            if (policy.approvalStatus === "APPROVED" && policy.status === "ACTIVE") {
+                document.getElementById("policy-status-message").innerHTML = 
+                    "Your policy is active and ready for premium payment.";
+                document.getElementById("payment-form-container").style.display = "block";
+                
+                // Fill in policy details
+                document.getElementById("policy-number").textContent = policy.policyNumber;
+                document.getElementById("policy-type").textContent = policy.policyType;
+                document.getElementById("policy-status").textContent = policy.status;
+                document.getElementById("start-date").textContent = formatDate(policy.startDate);
+                document.getElementById("end-date").textContent = formatDate(policy.endDate);
+                document.getElementById("premium-amount").textContent = policy.premiumAmount.toLocaleString();
+                
+                // Calculate payment options
+                calculatePaymentAmounts();
+                
+                // Set initial payment summary
+                updatePaymentSummary();
+            } else {
+                // Policy is not eligible for payment
+                let statusMessage = "";
+                if (policy.approvalStatus !== "APPROVED") {
+                    statusMessage = "Your policy is currently awaiting approval. Payment options will be available once your policy is approved.";
+                    document.getElementById("policy-status-section").className = "alert alert-warning";
+                } else if (policy.status !== "ACTIVE") {
+                    statusMessage = "Your policy is not active. Please contact customer support for assistance.";
+                    document.getElementById("policy-status-section").className = "alert alert-danger";
+                }
+                document.getElementById("policy-status-message").innerHTML = statusMessage;
+            }
+        });
+        
+        function calculatePaymentAmounts() {
+            const baseMonthlyPremium = policy.premiumAmount;
+            
+            // Monthly (no discount)
+            document.getElementById("monthly-amount").textContent = baseMonthlyPremium.toLocaleString();
+            
+            // Half-yearly (15% discount)
+            const halfYearlyBase = baseMonthlyPremium * 6;
+            const halfYearlyDiscount = halfYearlyBase * 0.15;
+            const halfYearlyAmount = halfYearlyBase - halfYearlyDiscount;
+            document.getElementById("half-yearly-amount").textContent = halfYearlyAmount.toLocaleString();
+            document.getElementById("half-yearly-savings").textContent = halfYearlyDiscount.toLocaleString();
+            
+            // Yearly (25% discount)
+            const yearlyBase = baseMonthlyPremium * 12;
+            const yearlyDiscount = yearlyBase * 0.25;
+            const yearlyAmount = yearlyBase - yearlyDiscount;
+            document.getElementById("yearly-amount").textContent = yearlyAmount.toLocaleString();
+            document.getElementById("yearly-savings").textContent = yearlyDiscount.toLocaleString();
+        }
+        
+        function selectPaymentOption(option) {
+            // Update UI
+            document.querySelectorAll('.payment-option').forEach(el => {
+                el.classList.remove('selected');
+            });
+            document.querySelector(`.payment-option[data-option="${option}"]`).classList.add('selected');
+            
+            // Update selected option
+            selectedPaymentOption = option;
+            
+            // Update payment summary
+            updatePaymentSummary();
+        }
+        
+        function selectPaymentMethod(method) {
+            // Update UI
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            document.querySelector(`.payment-method[data-method="${method}"]`).classList.add('selected');
+            
+            // Update selected method
+            selectedPaymentMethod = method;
+            
+            // Show/hide relevant payment details
+            document.getElementById("upi-payment").style.display = method === "upi" ? "block" : "none";
+            document.getElementById("netbanking-payment").style.display = method === "netbanking" ? "block" : "none";
+        }
+        
+        function updatePaymentSummary() {
+            const baseMonthlyPremium = policy.premiumAmount;
+            let totalAmount = baseMonthlyPremium;
+            let discountAmount = 0;
+            let originalAmount = baseMonthlyPremium;
+            
+            if (selectedPaymentOption === "monthly") {
+                // No discount for monthly
+                document.getElementById("summary-discount-row").style.display = "none";
+            } else {
+                document.getElementById("summary-discount-row").style.display = "flex";
+                
+                if (selectedPaymentOption === "half-yearly") {
+                    originalAmount = baseMonthlyPremium * 6;
+                    discountAmount = originalAmount * 0.15;
+                    totalAmount = originalAmount - discountAmount;
+                } else if (selectedPaymentOption === "yearly") {
+                    originalAmount = baseMonthlyPremium * 12;
+                    discountAmount = originalAmount * 0.25;
+                    totalAmount = originalAmount - discountAmount;
+                }
+            }
+            
+            document.getElementById("summary-premium").textContent = originalAmount.toLocaleString();
+            document.getElementById("summary-discount").textContent = discountAmount.toLocaleString();
+            document.getElementById("summary-total").textContent = totalAmount.toLocaleString();
+        }
+        
+        function processPayment() {
+            // In a real application, this would make an API call to your payment gateway
+            // For this example, we'll simulate a successful payment
+            
+            // Generate a random payment ID
+            const paymentId = "PAY-" + Math.random().toString(36).substr(2, 8).toUpperCase();
+            
+            // Calculate the final amount
+            const baseMonthlyPremium = policy.premiumAmount;
+            let totalAmount = baseMonthlyPremium;
+            
+            if (selectedPaymentOption === "half-yearly") {
+                const originalAmount = baseMonthlyPremium * 6;
+                totalAmount = originalAmount - (originalAmount * 0.15);
+            } else if (selectedPaymentOption === "yearly") {
+                const originalAmount = baseMonthlyPremium * 12;
+                totalAmount = originalAmount - (originalAmount * 0.25);
+            }
+            
+            // Set receipt details
+            document.getElementById("payment-id").textContent = paymentId;
+            document.getElementById("receipt-policy-id").textContent = policy.id;
+            document.getElementById("receipt-amount").textContent = totalAmount.toLocaleString();
+            document.getElementById("payment-date").textContent = new Date().toLocaleString();
+            
+            // Show success modal
+            const successModal = new bootstrap.Modal(document.getElementById('success-modal'));
+            successModal.show();
+        }
+        
+        function redirectToDashboard() {
+            // In a real application, this would redirect to the dashboard
+            window.location.href = "/dashboard";
+        }
+        
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString(undefined, options);
+        }
+    </script>
+</body>
+</html>
